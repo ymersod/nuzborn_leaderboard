@@ -1,10 +1,12 @@
 {
- "compilerOptions": {
+  "compilerOptions": {
     "target": "es6",
-    "module": "commonjs",
+    "module": "ESNext",  // Set to ESNext for modern browser compatibility
+    "moduleResolution": "Node",  // Use Node-style module resolution
     "outDir": "./dist",
     "rootDir": "./src",
-    "strict": true
+    "strict": true,
+    "esModuleInterop": true  // Allow default imports from modules with no default export
   },
   "include": ["src"]
 }
