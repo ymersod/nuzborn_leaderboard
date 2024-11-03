@@ -19,10 +19,20 @@ async function fetchPokemonData(pokemonName: string): Promise<Pokemon | null> {
       const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName.toLowerCase()}`);  
       const pokemon = await response.json();
       console.log(pokemon);
-      return null;
+      return pokemon;
   } catch (error) {
       console.error("Error fetching Pokémon data:", error);
       return null;
+  }
+}
+
+async function fetchAPI(): Promise<void> {
+  try {
+      const response = await fetch("http://localhost:5186/weatherforecast");
+      const data = await response.json();
+      console.log(data);
+  } catch (error) {
+      console.error("Error fetching data:", error);
   }
 }
 
@@ -32,7 +42,6 @@ async function displayPokemon(pokemonName: string) {
       console.log(`Name: ${pokemon.name}`);
       console.log(`ID: ${pokemon.id}`);
       console.log(`Height: ${pokemon.height}`);
-      console.log(`Weight: ${pokemon.weight}`);
       console.log("Types:", pokemon.types.map(t => t.type.name).join(", "));
   } else {
       console.log("Pokémon not found.");
@@ -71,6 +80,7 @@ function refreshLeaderboard(): void {
 document.getElementById("getPokeButton")?.addEventListener("click", () => displayPokemon("ditto"));
 
 document.getElementById("refreshButton")?.addEventListener("click", refreshLeaderboard);
+document.getElementById("fetchAPI")?.addEventListener("click", fetchAPI);
 
 // Initial render
 renderLeaderboard();

@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc && lite-server",
+    "dev": "tsc-watch --onSuccess 'lite-server'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -19,6 +19,7 @@
     "lite-server": "^2.6.1",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
+    "tsc-watch": "^6.2.0",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.12.2",
     "webpack": "^5.95.0",

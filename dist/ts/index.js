@@ -15,18 +15,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var _a, _b;
+var _a, _b, _c;
 function fetchPokemonData(pokemonName) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const response = yield fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName.toLowerCase()}`);
             const pokemon = yield response.json();
             console.log(pokemon);
-            return null;
+            return pokemon;
         }
         catch (error) {
             console.error("Error fetching Pokémon data:", error);
             return null;
+        }
+    });
+}
+function fetchAPI() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const response = yield fetch("http://localhost:5186/weatherforecast");
+            const data = yield response.json();
+            console.log(data);
+        }
+        catch (error) {
+            console.error("Error fetching data:", error);
         }
     });
 }
@@ -37,7 +49,6 @@ function displayPokemon(pokemonName) {
             console.log(`Name: ${pokemon.name}`);
             console.log(`ID: ${pokemon.id}`);
             console.log(`Height: ${pokemon.height}`);
-            console.log(`Weight: ${pokemon.weight}`);
             console.log("Types:", pokemon.types.map(t => t.type.name).join(", "));
         }
         else {
@@ -71,5 +82,6 @@ function refreshLeaderboard() {
 // Set up event listener for the refresh button
 (_a = document.getElementById("getPokeButton")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", () => displayPokemon("ditto"));
 (_b = document.getElementById("refreshButton")) === null || _b === void 0 ? void 0 : _b.addEventListener("click", refreshLeaderboard);
+(_c = document.getElementById("fetchAPI")) === null || _c === void 0 ? void 0 : _c.addEventListener("click", fetchAPI);
 // Initial render
 renderLeaderboard();
