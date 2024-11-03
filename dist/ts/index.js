@@ -32,8 +32,17 @@ function fetchPokemonData(pokemonName) {
 }
 function fetchAPI() {
     return __awaiter(this, void 0, void 0, function* () {
+        const baseURL = "https://nuzborn.azurewebsites.net/Trainer/GetTrainers";
+        const url = new URL(baseURL);
+        url.searchParams.append('trainerID', '1');
+        url.searchParams.append('nickName', 'fisk');
         try {
-            const response = yield fetch("http://localhost:5186/weatherforecast");
+            const response = yield fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
             const data = yield response.json();
             console.log(data);
         }

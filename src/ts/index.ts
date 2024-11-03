@@ -27,8 +27,17 @@ async function fetchPokemonData(pokemonName: string): Promise<Pokemon | null> {
 }
 
 async function fetchAPI(): Promise<void> {
+  const baseURL = "https://nuzborn.azurewebsites.net/Trainer/GetTrainers";
+  const url = new URL(baseURL);
+  url.searchParams.append('trainerID', '1');
+  url.searchParams.append('nickName', 'fisk');
   try {
-      const response = await fetch("http://localhost:5186/weatherforecast");
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
       const data = await response.json();
       console.log(data);
   } catch (error) {
