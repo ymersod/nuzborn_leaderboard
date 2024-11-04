@@ -10,8 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 function fetchPokemonData(pokemonNames) {
     return __awaiter(this, void 0, void 0, function* () {
-        const promises = pokemonNames.map(name => fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`)
-            .then(response => response.json()));
+        const promises = pokemonNames.map(name => {
+            // Check if the name is "MEOWSTIC" (case-insensitive)
+            const fetchName = (name.toUpperCase() === "MEOWSTIC") ? 678 : name.toLowerCase();
+            return fetch(`https://pokeapi.co/api/v2/pokemon/${fetchName}`)
+                .then(response => response.json());
+        });
         try {
             const pokemons = yield Promise.all(promises);
             return pokemons;
@@ -58,15 +62,20 @@ function renderLeaderboard() {
             }
             // Clear existing leaderboard content
             leaderboard.innerHTML = '';
-            // Sort trainers by progress in descending order
+            // Sort trainers by progress in descending 
+            console.log(api_data);
             const runaliveTrue = api_data
-                .filter((item) => item.runAlive === true)
+                .filter((item) => item.runAlive == true)
                 .sort((a, b) => Number(b.progress) - Number(a.progress));
+            console.log(runaliveTrue);
             for (const trainer of runaliveTrue) {
-                const partyPokemons = trainer.pokemon.filter(poke => poke.party === true); // Filter for Pokémon in the party
-                const boxedMons = trainer.pokemon.filter(poke => poke.party === false); // Filter for Pokémon in the box
+                const partyPokemons = trainer.pokemon.filter(poke => poke.party == true); // Filter for Pokémon in the party
+                const boxedMons = trainer.pokemon.filter(poke => poke.party == false); // Filter for Pokémon in the box
                 const poke_api_data_party = yield fetchPokemonData(partyPokemons.map(poke => poke.name));
                 const poke_api_data_boxed = yield fetchPokemonData(boxedMons.map(poke => poke.name));
+                if (trainer.nickName == "Ymer9999") {
+                    console.log(partyPokemons.map(poke => poke.name));
+                }
                 if (poke_api_data_party && poke_api_data_party.length > 0) {
                     // Create a container for the trainer
                     const trainerElement = document.createElement("div");
