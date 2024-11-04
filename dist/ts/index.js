@@ -1,11 +1,4 @@
 "use strict";
-// Sample data for the leaderboard
-/* const players = [
-  { name: "Alice", score: 95 },
-  { name: "Bob", score: 88 },
-  { name: "Charlie", score: 78 },
-  { name: "Diana", score: 90 },
-]; */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -15,27 +8,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var _a, _b, _c;
-function fetchPokemonData(pokemonName) {
+function fetchPokemonData(pokemonNames) {
     return __awaiter(this, void 0, void 0, function* () {
+        const promises = pokemonNames.map(name => fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`)
+            .then(response => response.json()));
         try {
-            const response = yield fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName.toLowerCase()}`);
-            const pokemon = yield response.json();
-            console.log(pokemon);
-            return pokemon;
+            const pokemons = yield Promise.all(promises);
+            return pokemons;
         }
         catch (error) {
-            console.error("Error fetching Pokémon data:", error);
-            return null;
+            console.error('Error fetching Pokémon:', error);
+            return [];
         }
     });
 }
 function fetchAPI() {
     return __awaiter(this, void 0, void 0, function* () {
-        const baseURL = "https://nuzborn.azurewebsites.net/Trainer/GetTrainers";
+        const baseURL = "https://nuzborn.azurewebsites.net/Trainer/GetAllTrainers";
         const url = new URL(baseURL);
-        url.searchParams.append('trainerID', '1');
-        url.searchParams.append('nickName', 'fisk');
         try {
             const response = yield fetch(url, {
                 method: 'GET',
@@ -44,53 +34,104 @@ function fetchAPI() {
                 }
             });
             const data = yield response.json();
-            console.log(data);
+            return data;
+        }
+        catch (error) {
+            console.error("Error fetching data:", error);
+            return [];
+        }
+    });
+}
+// Function to render the leaderboard
+function renderLeaderboard() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const leaderboard = document.getElementById("leaderboard");
+        if (!leaderboard) {
+            console.error("Leaderboard element not found");
+            return;
+        }
+        try {
+            const api_data = yield fetchAPI();
+            if (!api_data) {
+                console.error("No data returned from fetchAPI");
+                return;
+            }
+            // Clear existing leaderboard content
+            leaderboard.innerHTML = '';
+            // Sort trainers by progress in descending order
+            api_data.sort((a, b) => {
+                return Number(b.progress) - Number(a.progress);
+            });
+            for (const trainer of api_data) {
+                const partyPokemons = trainer.pokemon.filter(poke => poke.party === true); // Filter for Pokémon in the party
+                const boxedMons = trainer.pokemon.filter(poke => poke.party === false); // Filter for Pokémon in the box
+                const poke_api_data_party = yield fetchPokemonData(partyPokemons.map(poke => poke.name));
+                const poke_api_data_boxed = yield fetchPokemonData(boxedMons.map(poke => poke.name));
+                if (poke_api_data_party && poke_api_data_party.length > 0) {
+                    // Create a container for the trainer
+                    const trainerElement = document.createElement("div");
+                    trainerElement.style.border = "1px solid #ccc"; // Border around each trainer
+                    trainerElement.style.textAlign = "center"; // Center text for trainer's nickname
+                    trainerElement.innerHTML = `<h3>${trainer.nickName} : ${trainer.trainerID}</h3>`;
+                    trainerElement.innerHTML += `<h2>${trainer.progress} badges</h2>`;
+                    // Create a grid container for the Pokémon party
+                    const pokemonGrid = document.createElement("div");
+                    pokemonGrid.className = "pokemon-grid"; // Apply grid class for styling
+                    // Title for the party Pokémon grid
+                    const pokemonTitle = document.createElement("div");
+                    pokemonTitle.className = "pokemon-title";
+                    pokemonTitle.textContent = "Party Pokémon";
+                    trainerElement.appendChild(pokemonTitle); // Append title to the trainer element
+                    // Render party Pokémon
+                    for (const poke of poke_api_data_party) {
+                        const pokemonBox = document.createElement("div");
+                        pokemonBox.className = "pokemon-box"; // Apply box class for styling
+                        // Create an image element for the Pokémon
+                        const pokeImage = document.createElement("img");
+                        pokeImage.src = poke.sprites.front_default; // Image URL
+                        pokeImage.alt = `${poke.name} image`;
+                        // Append image and text to the box
+                        pokemonBox.appendChild(pokeImage);
+                        pokemonBox.appendChild(document.createTextNode(`${poke.name}`));
+                        pokemonGrid.appendChild(pokemonBox);
+                    }
+                    trainerElement.appendChild(pokemonGrid); // Append the party Pokémon grid
+                    // Create a smaller grid container for boxed Pokémon
+                    const boxedGrid = document.createElement("div");
+                    boxedGrid.className = "boxed-grid"; // Apply boxed grid class for styling
+                    // Title for the boxed Pokémon grid
+                    const boxedTitle = document.createElement("div");
+                    boxedTitle.className = "boxed-title";
+                    boxedTitle.textContent = "Boxed Pokémon";
+                    trainerElement.appendChild(boxedTitle); // Append title to the trainer element
+                    // Render boxed Pokémon
+                    if (poke_api_data_boxed && poke_api_data_boxed.length > 0) {
+                        for (const poke of poke_api_data_boxed) {
+                            const boxedPokemonBox = document.createElement("div");
+                            boxedPokemonBox.className = "boxed-pokemon-box"; // Apply boxed box class for styling
+                            // Create an image element for the Pokémon
+                            const boxedPokeImage = document.createElement("img");
+                            boxedPokeImage.src = poke.sprites.front_default; // Image URL
+                            boxedPokeImage.alt = `${poke.name} image`;
+                            // Append image and text to the boxed box
+                            boxedPokemonBox.appendChild(boxedPokeImage);
+                            boxedPokemonBox.appendChild(document.createTextNode(`${poke.name}`));
+                            boxedGrid.appendChild(boxedPokemonBox);
+                        }
+                    }
+                    trainerElement.appendChild(boxedGrid); // Append the boxed Pokémon grid
+                    leaderboard.appendChild(trainerElement); // Append the trainer element to the leaderboard
+                }
+            }
         }
         catch (error) {
             console.error("Error fetching data:", error);
         }
     });
 }
-function displayPokemon(pokemonName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const pokemon = yield fetchPokemonData(pokemonName);
-        if (pokemon) {
-            console.log(`Name: ${pokemon.name}`);
-            console.log(`ID: ${pokemon.id}`);
-            console.log(`Height: ${pokemon.height}`);
-            console.log("Types:", pokemon.types.map(t => t.type.name).join(", "));
-        }
-        else {
-            console.log("Pokémon not found.");
-        }
-    });
-}
-// Function to render the leaderboard
-function renderLeaderboard() {
-    const leaderboard = document.getElementById("leaderboard");
-    if (leaderboard) {
-        leaderboard.innerHTML = "<h2>Leaderboard</h2>";
-        const list = document.createElement("ul");
-        /*  players.forEach(player => {
-             const listItem = document.createElement("li");
-             listItem.textContent = `${player.name}: ${player.score} points`;
-             list.appendChild(listItem);
-         }); */
-        leaderboard.appendChild(list);
-    }
-}
 // Function to randomly update player scores
 function refreshLeaderboard() {
-    /* players.forEach(player => {
-        // Generate a random score change between -10 and +10
-        const scoreChange = Math.floor(Math.random() * 21) - 10;
-        player.score = Math.max(0, player.score + scoreChange); // Ensure score doesn't go below 0
-    }); */
     renderLeaderboard();
 }
-// Set up event listener for the refresh button
-(_a = document.getElementById("getPokeButton")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", () => displayPokemon("ditto"));
-(_b = document.getElementById("refreshButton")) === null || _b === void 0 ? void 0 : _b.addEventListener("click", refreshLeaderboard);
-(_c = document.getElementById("fetchAPI")) === null || _c === void 0 ? void 0 : _c.addEventListener("click", fetchAPI);
 // Initial render
 renderLeaderboard();

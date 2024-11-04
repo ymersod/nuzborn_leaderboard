@@ -1,0 +1,97 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f8ff; /* Light blue background */
+    color: #333; /* Dark text color */
+    text-align: center;
+}
+
+#leaderboard {
+    max-width: 1200px; /* Max width for the leaderboard */
+    margin: 20px auto; /* Center the leaderboard */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    background-color: #ffffff; /* White background */
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #4A90E2; /* Blue color for the header */
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #7B7B7B; /* Gray color for the progress */
+}
+
+h3 {
+    font-size: 1.2rem;
+    color: #333; /* Darker color for the trainer names */
+}
+
+div.pokemon-grid, div.boxed-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 columns */
+    gap: 15px; /* Space between boxes */
+    margin-bottom: 20px; /* Space below the grid */
+}
+
+div.boxed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* 60px min width, flexible */
+    gap: 15px; /* Space between boxes */
+    margin-top: 20px; /* Space above the boxed grid */
+}
+
+.pokemon-title, .boxed-title {
+    font-size: 1.1rem; /* Title size for grids */
+    margin-bottom: 10px; /* Space below titles */
+    color: #4A90E2; /* Color for titles */
+    text-align: left; /* Align title to the left */
+}
+
+.pokemon-box, .boxed-pokemon-box {
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 8px; /* Rounded corners */
+    padding: 5px; /* Inner padding */
+    background-color: #f9f9f9; /* Light background */
+    transition: transform 0.3s, box-shadow 0.3s; /* Smooth hover effect */
+}
+
+.pokemon-box:hover, .boxed-pokemon-box:hover {
+    transform: translateY(-5px); /* Lift effect on hover */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Shadow on hover */
+}
+
+.pokemon-box img, .boxed-pokemon-box img {
+    width: 80px; /* Width of the party Pokémon image */
+    height: 80px; /* Height of the party Pokémon image */
+    margin-bottom: 5px; /* Space between image and text */
+}
+
+.boxed-pokemon-box img {
+    width: 40px; /* Smaller width for the boxed Pokémon image */
+    height: 40px; /* Smaller height for the boxed Pokémon image */
+}
+
+.pokemon-box p, .boxed-pokemon-box p {
+    font-size: 0.9rem; /* Smaller text size for Pokémon names */
+    margin: 0; /* Remove default margins */
+    color: #555; /* Dark gray for the text */
+}
+
+.boxed-pokemon-box {
+    width: 60px; /* Adjust the width for the boxed Pokémon image */
+    height: 60px; /* Adjust the height for the boxed Pokémon image */
+    padding: 5px; /* Inner padding */
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 8px; /* Rounded corners */
+    background-color: #f9f9f9; /* Light background */
+    transition: transform 0.3s, box-shadow 0.3s; /* Smooth hover effect */
+    display: flex; /* Flexbox for aligning items */
+    flex-direction: column; /* Stack children vertically */
+    align-items: center; /* Center items horizontally */
+    justify-content: center; /* Center items vertically */
+}

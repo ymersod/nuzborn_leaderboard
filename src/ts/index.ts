@@ -1,36 +1,44 @@
-// Sample data for the leaderboard
-/* const players = [
-  { name: "Alice", score: 95 },
-  { name: "Bob", score: 88 },
-  { name: "Charlie", score: 78 },
-  { name: "Diana", score: 90 },
-]; */
-
+interface Trainer {
+  trainerID: string,
+  nickName: string,
+  runAlive: boolean,
+  progress: string,
+  pokemon: Pokemon[],
+}
 interface Pokemon {
+  name: string,
+  level: number,
+  party: boolean,
+  alive: boolean,
+}
+
+interface PokeAPIPokemon {
   name: string;
   id: number;
   height: number;
   weight: number;
+  sprites: { front_default: string };
   types: { type: { name: string } }[];
 }
 
-async function fetchPokemonData(pokemonName: string): Promise<Pokemon | null> {
-  try {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName.toLowerCase()}`);  
-      const pokemon = await response.json();
-      console.log(pokemon);
-      return pokemon;
-  } catch (error) {
-      console.error("Error fetching Pokémon data:", error);
-      return null;
-  }
+async function fetchPokemonData(pokemonNames: string[]): Promise<PokeAPIPokemon[] | null> {
+ const promises = pokemonNames.map(name => 
+        fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`)
+            .then(response => response.json())
+    );
+
+    try {
+        const pokemons = await Promise.all(promises);
+        return pokemons;
+    } catch (error) {
+        console.error('Error fetching Pokémon:', error);
+        return [];
+    }
 }
 
-async function fetchAPI(): Promise<void> {
-  const baseURL = "https://nuzborn.azurewebsites.net/Trainer/GetTrainers";
+async function fetchAPI(): Promise<Trainer[] | null> {
+  const baseURL = "https://nuzborn.azurewebsites.net/Trainer/GetAllTrainers";
   const url = new URL(baseURL);
-  url.searchParams.append('trainerID', '1');
-  url.searchParams.append('nickName', 'fisk');
   try {
       const response = await fetch(url, {
         method: 'GET',
@@ -39,57 +47,120 @@ async function fetchAPI(): Promise<void> {
         }
       });
       const data = await response.json();
-      console.log(data);
+      return data;
   } catch (error) {
       console.error("Error fetching data:", error);
-  }
-}
-
-async function displayPokemon(pokemonName: string) {
-  const pokemon = await fetchPokemonData(pokemonName);
-  if (pokemon) {
-      console.log(`Name: ${pokemon.name}`);
-      console.log(`ID: ${pokemon.id}`);
-      console.log(`Height: ${pokemon.height}`);
-      console.log("Types:", pokemon.types.map(t => t.type.name).join(", "));
-  } else {
-      console.log("Pokémon not found.");
+      return [];
   }
 }
 
 // Function to render the leaderboard
-function renderLeaderboard(): void {
+async function renderLeaderboard(): Promise<void> {
   const leaderboard = document.getElementById("leaderboard");
+  
+  if (!leaderboard) {
+    console.error("Leaderboard element not found");
+    return;
+  }
 
-  if (leaderboard) {
-      leaderboard.innerHTML = "<h2>Leaderboard</h2>";
-      const list = document.createElement("ul");
+  try {
+    const api_data = await fetchAPI();
+    if (!api_data) {
+      console.error("No data returned from fetchAPI");
+      return;
+    }
 
-     /*  players.forEach(player => {
-          const listItem = document.createElement("li");
-          listItem.textContent = `${player.name}: ${player.score} points`;
-          list.appendChild(listItem);
-      }); */
+    // Clear existing leaderboard content
+    leaderboard.innerHTML = '';
+    
+    // Sort trainers by progress in descending order
+    api_data.sort((a, b) => {
+      return Number(b.progress) - Number(a.progress);
+    });
 
-      leaderboard.appendChild(list);
+    for (const trainer of api_data) {
+      const partyPokemons = trainer.pokemon.filter(poke => poke.party === true); // Filter for Pokémon in the party
+      const boxedMons = trainer.pokemon.filter(poke => poke.party === false); // Filter for Pokémon in the box
+      const poke_api_data_party = await fetchPokemonData(partyPokemons.map(poke => poke.name));
+      const poke_api_data_boxed = await fetchPokemonData(boxedMons.map(poke => poke.name));
+
+      if (poke_api_data_party && poke_api_data_party.length > 0) {
+        // Create a container for the trainer
+        const trainerElement = document.createElement("div");
+        trainerElement.style.border = "1px solid #ccc"; // Border around each trainer
+        trainerElement.style.textAlign = "center"; // Center text for trainer's nickname
+        trainerElement.innerHTML = `<h3>${trainer.nickName} : ${trainer.trainerID}</h3>`;
+        trainerElement.innerHTML += `<h2>${trainer.progress} badges</h2>`;
+        
+        // Create a grid container for the Pokémon party
+        const pokemonGrid = document.createElement("div");
+        pokemonGrid.className = "pokemon-grid"; // Apply grid class for styling
+
+        // Title for the party Pokémon grid
+        const pokemonTitle = document.createElement("div");
+        pokemonTitle.className = "pokemon-title";
+        pokemonTitle.textContent = "Party Pokémon";
+        trainerElement.appendChild(pokemonTitle); // Append title to the trainer element
+
+        // Render party Pokémon
+        for (const poke of poke_api_data_party) {
+          const pokemonBox = document.createElement("div");
+          pokemonBox.className = "pokemon-box"; // Apply box class for styling
+
+          // Create an image element for the Pokémon
+          const pokeImage = document.createElement("img");
+          pokeImage.src = poke.sprites.front_default; // Image URL
+          pokeImage.alt = `${poke.name} image`;
+
+          // Append image and text to the box
+          pokemonBox.appendChild(pokeImage);
+          pokemonBox.appendChild(document.createTextNode(`${poke.name}`));
+          pokemonGrid.appendChild(pokemonBox);
+        }
+
+        trainerElement.appendChild(pokemonGrid); // Append the party Pokémon grid
+
+        // Create a smaller grid container for boxed Pokémon
+        const boxedGrid = document.createElement("div");
+        boxedGrid.className = "boxed-grid"; // Apply boxed grid class for styling
+
+        // Title for the boxed Pokémon grid
+        const boxedTitle = document.createElement("div");
+        boxedTitle.className = "boxed-title";
+        boxedTitle.textContent = "Boxed Pokémon";
+        trainerElement.appendChild(boxedTitle); // Append title to the trainer element
+
+        // Render boxed Pokémon
+        if (poke_api_data_boxed && poke_api_data_boxed.length > 0) {
+          for (const poke of poke_api_data_boxed) {
+            const boxedPokemonBox = document.createElement("div");
+            boxedPokemonBox.className = "boxed-pokemon-box"; // Apply boxed box class for styling
+
+            // Create an image element for the Pokémon
+            const boxedPokeImage = document.createElement("img");
+            boxedPokeImage.src = poke.sprites.front_default; // Image URL
+            boxedPokeImage.alt = `${poke.name} image`;
+
+            // Append image and text to the boxed box
+            boxedPokemonBox.appendChild(boxedPokeImage);
+            boxedPokemonBox.appendChild(document.createTextNode(`${poke.name}`));
+            boxedGrid.appendChild(boxedPokemonBox);
+          }
+        }
+
+        trainerElement.appendChild(boxedGrid); // Append the boxed Pokémon grid
+        leaderboard.appendChild(trainerElement); // Append the trainer element to the leaderboard
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching data:", error);
   }
 }
 
 // Function to randomly update player scores
 function refreshLeaderboard(): void {
-  /* players.forEach(player => {
-      // Generate a random score change between -10 and +10
-      const scoreChange = Math.floor(Math.random() * 21) - 10;
-      player.score = Math.max(0, player.score + scoreChange); // Ensure score doesn't go below 0
-  }); */
   renderLeaderboard();
 }
-
-// Set up event listener for the refresh button
-document.getElementById("getPokeButton")?.addEventListener("click", () => displayPokemon("ditto"));
-
-document.getElementById("refreshButton")?.addEventListener("click", refreshLeaderboard);
-document.getElementById("fetchAPI")?.addEventListener("click", fetchAPI);
 
 // Initial render
 renderLeaderboard();
