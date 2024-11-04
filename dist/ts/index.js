@@ -59,10 +59,10 @@ function renderLeaderboard() {
             // Clear existing leaderboard content
             leaderboard.innerHTML = '';
             // Sort trainers by progress in descending order
-            api_data.sort((a, b) => {
-                return Number(b.progress) - Number(a.progress);
-            });
-            for (const trainer of api_data) {
+            const runaliveTrue = api_data
+                .filter((item) => item.runAlive === true)
+                .sort((a, b) => Number(b.progress) - Number(a.progress));
+            for (const trainer of runaliveTrue) {
                 const partyPokemons = trainer.pokemon.filter(poke => poke.party === true); // Filter for Pokémon in the party
                 const boxedMons = trainer.pokemon.filter(poke => poke.party === false); // Filter for Pokémon in the box
                 const poke_api_data_party = yield fetchPokemonData(partyPokemons.map(poke => poke.name));
@@ -122,6 +122,19 @@ function renderLeaderboard() {
                     trainerElement.appendChild(boxedGrid); // Append the boxed Pokémon grid
                     leaderboard.appendChild(trainerElement); // Append the trainer element to the leaderboard
                 }
+            }
+            const runaliveFalse = api_data
+                .filter((item) => item.runAlive === false);
+            const title = document.createElement("h1");
+            title.innerHTML = "Graveyard";
+            leaderboard.appendChild(title);
+            for (const trainer of runaliveFalse) {
+                const trainerElement = document.createElement("div");
+                trainerElement.style.border = "1px solid #ccc"; // Border around each trainer
+                trainerElement.style.textAlign = "center"; // Center text for trainer's nickname
+                trainerElement.innerHTML = `<h3>${trainer.nickName} : ${trainer.trainerID}</h3>`;
+                trainerElement.innerHTML += `<h2>${trainer.progress} badges</h2>`;
+                leaderboard.appendChild(trainerElement);
             }
         }
         catch (error) {
