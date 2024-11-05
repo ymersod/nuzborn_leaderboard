@@ -61,12 +61,11 @@ function renderLeaderboard() {
             // Clear existing leaderboard content
             leaderboard.innerHTML = '';
             // Sort trainers by progress in descending 
-            console.log(api_data);
             const runaliveTrue = api_data
                 .filter((item) => item.runAlive == true)
                 .sort((a, b) => Number(b.progress) - Number(a.progress));
-            console.log(runaliveTrue);
             for (const trainer of runaliveTrue) {
+                trainer.pokemon.map(pokemon => pokemon.name = pokemon.name === "DEERLING-SPRING FORM" ? "DEERLING" : pokemon.name);
                 const partyPokemons = trainer.pokemon.filter(poke => poke.party == true); // Filter for Pokémon in the party
                 const boxedMons = trainer.pokemon.filter(poke => poke.party == false); // Filter for Pokémon in the box
                 const poke_api_data_party = yield fetchPokemonData(partyPokemons.map(poke => poke.name));
