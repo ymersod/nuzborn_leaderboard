@@ -79,9 +79,13 @@ async function renderLeaderboard(): Promise<void> {
     const runaliveTrue = api_data
       .filter((item) => item.runAlive == true)
       .sort((a, b) => Number(b.progress) - Number(a.progress));
-  
+    
+    const edgeCaseList = [
+      "DEERLING-SPRING FORM",
+      "SAWSBUCK-SPRING FORM",
+    ]
     for (const trainer of runaliveTrue) {
-      trainer.pokemon.map(pokemon => pokemon.name = pokemon.name === "DEERLING-SPRING FORM" ? "DEERLING": pokemon.name);
+      trainer.pokemon.map(pokemon => pokemon.name = edgeCaseList.includes(pokemon.name) ? pokemon.name.split("-")[0]: pokemon.name);
       const partyPokemons = trainer.pokemon.filter(poke => poke.party == true); // Filter for Pokémon in the party
       const boxedMons = trainer.pokemon.filter(poke => poke.party == false); // Filter for Pokémon in the box
       const poke_api_data_party = await fetchPokemonData(partyPokemons.map(poke => poke.name));
