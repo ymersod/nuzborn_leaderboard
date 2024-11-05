@@ -38,6 +38,10 @@ div.pokemon-grid, div.boxed-grid {
     margin-bottom: 20px; /* Space below the grid */
 }
 
+.trainer {
+    padding: 20px;
+}
+
 div.boxed-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* 60px min width, flexible */
@@ -53,7 +57,7 @@ div.boxed-grid {
 }
 
 .pokemon-box, .boxed-pokemon-box {
-    border: 1px solid #ddd; /* Light border */
+    border: 1px solid black; /* Light border */
     border-radius: 8px; /* Rounded corners */
     padding: 5px; /* Inner padding */
     background-color: #f9f9f9; /* Light background */
@@ -83,15 +87,53 @@ div.boxed-grid {
 }
 
 .boxed-pokemon-box {
-    width: 60px; /* Adjust the width for the boxed Pokémon image */
-    height: 60px; /* Adjust the height for the boxed Pokémon image */
-    padding: 5px; /* Inner padding */
-    border: 1px solid #ddd; /* Light border */
+    position: relative; /* Position relative for tooltip positioning */
+    width: 60px;
+    height: 60px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.tooltip {
+    visibility: hidden; /* Hidden by default */
+    width: 250px; /* Adjust width */
+    background-color: rgba(0, 0, 0, 0.8); /* Background color */
+    color: #fff; /* Text color */
+    text-align: center; /* Centered text */
+    border-radius: 5px; /* Rounded corners */
+    padding: 5px; /* Padding */
+    position: absolute; /* Positioning */
+    bottom: 125%; /* Position above the box */
+    left: 50%; /* Center tooltip */
+    transform: translateX(-50%); /* Center tooltip */
+    opacity: 0; /* Initially invisible */
+    transition: opacity 0.3s; /* Smooth transition */
+}
+
+.boxed-pokemon-box:hover .tooltip {
+    visibility: visible; /* Show tooltip on hover */
+    opacity: 1; /* Fade in effect */
+}
+
+.popup {
+    width: 300px; /* Width of the popup */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow effect */
     border-radius: 8px; /* Rounded corners */
-    background-color: #f9f9f9; /* Light background */
-    transition: transform 0.3s, box-shadow 0.3s; /* Smooth hover effect */
-    display: flex; /* Flexbox for aligning items */
-    flex-direction: column; /* Stack children vertically */
-    align-items: center; /* Center items horizontally */
-    justify-content: center; /* Center items vertically */
+}
+
+.popup button {
+    margin-top: 10px; /* Margin for the button */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+.popup ul {
+    list-style-type: none;
+    padding-left: 20px; /* Indent the list */
 }

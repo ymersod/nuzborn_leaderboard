@@ -7,8 +7,11 @@ interface Trainer {
 }
 interface Pokemon {
   name: string,
+  nickName: string,
   level: number,
+  ability: string,
   party: boolean,
+  locationCaught: string,
   alive: boolean,
 }
 
@@ -22,12 +25,9 @@ interface PokeAPIPokemon {
 }
 
 async function fetchPokemonData(pokemonNames: string[]): Promise<PokeAPIPokemon[] | null> {
-    const promises = pokemonNames.map(name => {
-      // Check if the name is "MEOWSTIC" (case-insensitive)
-      const fetchName = (name.toUpperCase() === "MEOWSTIC") ? 678 : name.toLowerCase();
-
-      return fetch(`https://pokeapi.co/api/v2/pokemon/${fetchName}`)
-          .then(response => response.json());
+    const promises = pokemonNames.map(async name => {
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`);
+      return await response.json();
   });
     try {
         const pokemons = await Promise.all(promises);
@@ -87,13 +87,31 @@ async function renderLeaderboard(): Promise<void> {
       const boxedMons = trainer.pokemon.filter(poke => poke.party == false); // Filter for Pokémon in the box
       const poke_api_data_party = await fetchPokemonData(partyPokemons.map(poke => poke.name));
       const poke_api_data_boxed = await fetchPokemonData(boxedMons.map(poke => poke.name));
-      if (trainer.nickName == "Ymer9999")
-      {
-         console.log(partyPokemons.map(poke => poke.name))
-      }
+      
+      // const mergedPartyPokemons = poke_api_data_party && poke_api_data_party.length > 0 ? 
+      // partyPokemons.map(partyMon => {
+      //   const apiData = poke_api_data_party?.find(apiMon => apiMon.name === partyMon.name);
+      //   if (apiData) {
+      //     return { ...partyMon, ...apiData };
+      //   }
+      //   return partyMon;
+      // }) : [];
+ 
+    
+      // const mergedBoxedPokemons = poke_api_data_boxed && poke_api_data_boxed.length > 0 ? 
+      // boxedMons.map(partyMon => {
+      //   const apiData = poke_api_data_boxed.find(apiMon => apiMon.name === partyMon.name);
+      //   if (apiData) {
+      //     return { ...partyMon, ...apiData };
+      //   }
+      //   return partyMon;
+      // }) : [];
+      
+      
       if (poke_api_data_party && poke_api_data_party.length > 0) {
         // Create a container for the trainer
         const trainerElement = document.createElement("div");
+        trainerElement.className = "trainer"; // Apply trainer class for styling
         trainerElement.style.border = "1px solid #ccc"; // Border around each trainer
         trainerElement.style.textAlign = "center"; // Center text for trainer's nickname
         trainerElement.innerHTML = `<h3>${trainer.nickName} : ${trainer.trainerID}</h3>`;
@@ -113,15 +131,65 @@ async function renderLeaderboard(): Promise<void> {
         for (const poke of poke_api_data_party) {
           const pokemonBox = document.createElement("div");
           pokemonBox.className = "pokemon-box"; // Apply box class for styling
-
+        
+          // Find the corresponding data in partyPokemons
+          const pokemonRebornData = partyPokemons.find(pokemon => pokemon.name === poke.name.toUpperCase());
+        
+          // Set background color based on alive status
+          pokemonBox.style.backgroundColor = pokemonRebornData?.alive ? "lightgrey" : "darkred";
+        
+          // Create a container for the top section (name and nickname)
+          const topSection = document.createElement("div");
+          topSection.className = "top-section";
+        
+          // Add Name
+          const nameText = document.createElement("p");
+          nameText.className = "pokemon-name";
+          nameText.textContent = `Species: ${poke.name}`;
+          topSection.appendChild(nameText);
+        
+          // Add Nickname (if available)
+          if (pokemonRebornData && pokemonRebornData.nickName) {
+            const nicknameText = document.createElement("p");
+            nicknameText.className = "pokemon-nickname";
+            nicknameText.textContent = `Nickname: ${pokemonRebornData.nickName}`;
+            topSection.appendChild(nicknameText);
+          }
+        
+          // Append top section to the box
+          pokemonBox.appendChild(topSection);
+        
           // Create an image element for the Pokémon
           const pokeImage = document.createElement("img");
-          pokeImage.src = poke.sprites.front_default; // Image URL
+          pokeImage.src = poke.sprites.front_default;
           pokeImage.alt = `${poke.name} image`;
-
-          // Append image and text to the box
+          pokeImage.className = "pokemon-image";
           pokemonBox.appendChild(pokeImage);
-          pokemonBox.appendChild(document.createTextNode(`${poke.name}`));
+        
+          // Add a bottom section for other details
+          const bottomSection = document.createElement("div");
+          bottomSection.className = "bottom-section";
+        
+          // Add Level (if available)
+          if (pokemonRebornData && pokemonRebornData.level) {
+            const levelText = document.createElement("p");
+            levelText.className = "pokemon-level";
+            levelText.textContent = `Level: ${pokemonRebornData.level}`;
+            bottomSection.appendChild(levelText);
+          }
+        
+          // Add Location caught (if available)
+          if (pokemonRebornData && pokemonRebornData.locationCaught) {
+            const locationText = document.createElement("p");
+            locationText.className = "pokemon-location";
+            locationText.textContent = `Caught at: ${pokemonRebornData.locationCaught}`;
+            bottomSection.appendChild(locationText);
+          }
+        
+          // Append bottom section to the box
+          pokemonBox.appendChild(bottomSection);
+        
+          // Append the complete pokemonBox to the grid
           pokemonGrid.appendChild(pokemonBox);
         }
 
@@ -142,15 +210,26 @@ async function renderLeaderboard(): Promise<void> {
           for (const poke of poke_api_data_boxed) {
             const boxedPokemonBox = document.createElement("div");
             boxedPokemonBox.className = "boxed-pokemon-box"; // Apply boxed box class for styling
+            const pokemonRebornData = boxedMons.find(pokemon => pokemon.name === poke.name.toUpperCase()); // Find the corresponding data in boxedMons
 
+            boxedPokemonBox.style.backgroundColor = pokemonRebornData?.alive ? "lightgreen" : "lightcoral"; // Green if alive, light
             // Create an image element for the Pokémon
             const boxedPokeImage = document.createElement("img");
             boxedPokeImage.src = poke.sprites.front_default; // Image URL
             boxedPokeImage.alt = `${poke.name} image`;
 
+            const tooltip = document.createElement("span");
+            tooltip.className = "tooltip";
+            tooltip.innerHTML = 
+              `Species: ${poke.name}<br>
+              Nickname: ${pokemonRebornData?.nickName}<br>
+              Level: ${pokemonRebornData?.level}<br>
+              Caught at: ${pokemonRebornData?.locationCaught}`;
+
             // Append image and text to the boxed box
             boxedPokemonBox.appendChild(boxedPokeImage);
             boxedPokemonBox.appendChild(document.createTextNode(`${poke.name}`));
+            boxedPokemonBox.appendChild(tooltip);
             boxedGrid.appendChild(boxedPokemonBox);
           }
         }
@@ -164,12 +243,51 @@ async function renderLeaderboard(): Promise<void> {
     const title = document.createElement("h1");
     title.innerHTML = "Graveyard";
     leaderboard.appendChild(title);
+
+    // Create the popup element
+    const popup = document.createElement("div");
+    popup.className = "popup"; // Add a class for styling
+    popup.style.display = "none"; // Hide it initially
+    popup.style.position = "fixed"; // Fixed position
+    popup.style.top = "50%"; // Center vertically
+    popup.style.left = "50%"; // Center horizontally
+    popup.style.transform = "translate(-50%, -50%)"; // Centering transform
+    popup.style.backgroundColor = "white"; // Popup background color
+    popup.style.border = "1px solid #ccc"; // Popup border
+    popup.style.padding = "20px"; // Padding inside the popup
+    popup.style.zIndex = "1000"; // Ensure it's above other elements
+    document.body.appendChild(popup);
+
+    // Close button for the popup
+    const closeButton = document.createElement("button");
+    closeButton.innerText = "Close";
+    closeButton.onclick = () => {
+      popup.style.display = "none"; // Hide the popup when clicked
+    };
+    popup.appendChild(closeButton);
+
     for (const trainer of runaliveFalse) {
+      // Create a list of fallen Pokémon
+      const pokemonList = trainer.pokemon
+        .map(pokemon => `<li>${pokemon.nickName} the ${pokemon.name.toLowerCase()}</li>`) // Create list items
+        .join(""); // Join the list items into a single string
       const trainerElement = document.createElement("div");
       trainerElement.style.border = "1px solid #ccc"; // Border around each trainer
       trainerElement.style.textAlign = "center"; // Center text for trainer's nickname
       trainerElement.innerHTML = `<h3>${trainer.nickName} : ${trainer.trainerID}</h3>`;
       trainerElement.innerHTML += `<h2>${trainer.progress} badges</h2>`;
+
+      // Add click event to the trainer element
+      trainerElement.onclick = () => {
+        popup.innerHTML = `<h3>${trainer.nickName} Details</h3>
+                          <p>Trainer ID: ${trainer.trainerID}</p>
+                          <p>Progress: ${trainer.progress} badges</p>
+                          <p>Fallen heroes:</p>
+                          <ul>${pokemonList}</ul>`; // Add a list for the fallen Pokémon
+        popup.appendChild(closeButton); // Append the close button again (optional)
+        popup.style.display = "block"; // Show the popup
+      };
+
       leaderboard.appendChild(trainerElement);
     }
 
