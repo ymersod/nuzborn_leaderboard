@@ -68,9 +68,12 @@ function renderLeaderboard() {
                 { case: "DEERLING-SPRING FORM", replacement: "DEERLING" },
                 { case: "SAWSBUCK-SPRING FORM", replacement: "SAWSBUCK" },
                 { case: "PUMPKABOO", replacement: "PUMPKABOO-LARGE" },
+                { case: "UNOWN", replacement: "UNOWN" },
             ];
             function getReplacementName(pokemonName) {
-                const edgeCase = edgeCaseList.find(item => item.case === pokemonName);
+                if (!pokemonName)
+                    return pokemonName;
+                const edgeCase = edgeCaseList.find(item => pokemonName.includes(item.case));
                 return edgeCase ? edgeCase.replacement : pokemonName;
             }
             for (const trainer of runaliveTrue) {
